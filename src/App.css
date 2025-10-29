@@ -22,22 +22,41 @@ body {
   background: white;
   border-radius: 20px;
   padding: 3rem;
-  max-width: 800px;
+  max-width: 900px;
   width: 100%;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
 h1 {
   color: #333;
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
-  text-align: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .subtitle {
   color: #666;
-  text-align: center;
-  margin-bottom: 2rem;
+  font-size: 1.1rem;
 }
 
 .input-section {
@@ -75,6 +94,18 @@ h1 {
   margin-top: 0.5rem;
   color: #667eea;
   font-weight: 500;
+  animation: slideIn 0.3s ease-in;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .divider {
@@ -117,6 +148,47 @@ h1 {
   border-color: #667eea;
 }
 
+.format-selector {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #f8f9ff;
+  border-radius: 10px;
+}
+
+.format-label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.75rem;
+}
+
+.format-options {
+  display: flex;
+  gap: 1rem;
+}
+
+.format-btn {
+  flex: 1;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  background: white;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.format-btn:hover {
+  border-color: #667eea;
+  transform: translateY(-2px);
+}
+
+.format-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
 .submit-button {
   width: 100%;
   padding: 1rem;
@@ -127,7 +199,7 @@ h1 {
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s;
 }
 
 .submit-button:hover:not(:disabled) {
@@ -140,6 +212,28 @@ h1 {
   cursor: not-allowed;
 }
 
+.loading-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .error-box {
   background: #fee;
   border: 2px solid #fcc;
@@ -147,17 +241,62 @@ h1 {
   padding: 1rem;
   margin-top: 1rem;
   color: #c00;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
 }
 
 .summary-section {
   margin-top: 2rem;
   padding-top: 2rem;
   border-top: 2px solid #f0f0f0;
+  animation: fadeIn 0.5s ease-in;
 }
 
-.summary-section h2 {
-  color: #333;
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.summary-header h2 {
+  color: #333;
+}
+
+.summary-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-button {
+  padding: 0.75rem 1.5rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.action-button:hover {
+  background: #764ba2;
+  transform: translateY(-2px);
+}
+
+.pdf-button {
+  background: #10b981;
+}
+
+.pdf-button:hover {
+  background: #059669;
 }
 
 .summary-content {
@@ -171,22 +310,43 @@ h1 {
   white-space: pre-wrap;
   word-wrap: break-word;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.6;
+  line-height: 1.8;
   color: #333;
 }
 
-.copy-button {
-  padding: 0.75rem 1.5rem;
-  background: #667eea;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s;
+.footer {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+  color: #999;
+  font-size: 0.9rem;
 }
 
-.copy-button:hover {
-  background: #764ba2;
-}
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 2rem 1.5rem;
+  }
 
+  h1 {
+    font-size: 2rem;
+  }
+
+  .format-options {
+    flex-direction: column;
+  }
+
+  .summary-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .summary-actions {
+    width: 100%;
+  }
+
+  .action-button {
+    flex: 1;
+  }
+}

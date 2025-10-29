@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import jsPDF from 'jspdf';
 import './App.css';
 
 // Use environment variable for API URL, fallback to localhost for development
@@ -10,6 +11,7 @@ function App() {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [summaryFormat, setSummaryFormat] = useState('detailed'); // brief, detailed, bullet
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -56,13 +58,39 @@ function App() {
 
   const generateSummary = async (text) => {
     try {
+      let prompt = '';
+      
+      if (summaryFormat === 'brief') {
+        prompt = `Provide a brief 2-3 sentence summary of this call:\n\n${text}`;
+      } else if (summaryFormat === 'bullet') {
+        prompt = `Analyze this call and provide bullet points covering:
+- Main Issue
+- Resolution
+- Action Items
+- Customer Sentiment
+
+Call transcript:
+${text}`;
+      } else {
+        prompt = `Analyze this call center conversation and provide:
+- Brief Summary (2-3 sentences)
+- Customer Issue
+- Resolution/Outcome
+- Action Items
+- Sentiment (Positive/Neutral/Negative)
+- Key Topics
+
+Call transcript:
+${text}`;
+      }
+
       // Call backend API
       const response = await fetch(`${API_URL}/api/summarize`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ transcript: text }),
+        body: JSON.stringify({ transcript: prompt }),
       });
 
       if (!response.ok) {
@@ -105,11 +133,38 @@ function App() {
     }
   };
 
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    const maxWidth = pageWidth - (margin * 2);
+    
+    // Add header
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text('Call Center Summary', margin, 20);
+    
+    // Add date
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Generated: ${new Date().toLocaleString()}`, margin, 30);
+    
+    // Add summary content
+    doc.setFontSize(11);
+    const lines = doc.splitTextToSize(summary, maxWidth);
+    doc.text(lines, margin, 40);
+    
+    // Save the PDF
+    doc.save(`call-summary-${Date.now()}.pdf`);
+  };
+
   return (
     <div className="app">
       <div className="container">
-        <h1>📞 Call Center Summary Tool</h1>
-        <p className="subtitle">Upload a call recording or paste a transcript to get an AI-powered summary</p>
+        <div className="header">
+          <h1>📞 Call Center Summary Tool</h1>
+          <p className="subtitle">AI-powered call analysis and summarization</p>
+        </div>
 
         <div className="input-section">
           <div className="upload-box">
@@ -123,7 +178,7 @@ function App() {
               onChange={handleFileChange}
               className="file-input"
             />
-            {file && <p className="file-name">Selected: {file.name}</p>}
+            {file && <p className="file-name">✅ Selected: {file.name}</p>}
           </div>
 
           <div className="divider">
@@ -144,12 +199,43 @@ function App() {
             />
           </div>
 
+          <div className="format-selector">
+            <label className="format-label">📊 Summary Format:</label>
+            <div className="format-options">
+              <button
+                className={`format-btn ${summaryFormat === 'brief' ? 'active' : ''}`}
+                onClick={() => setSummaryFormat('brief')}
+              >
+                Brief
+              </button>
+              <button
+                className={`format-btn ${summaryFormat === 'detailed' ? 'active' : ''}`}
+                onClick={() => setSummaryFormat('detailed')}
+              >
+                Detailed
+              </button>
+              <button
+                className={`format-btn ${summaryFormat === 'bullet' ? 'active' : ''}`}
+                onClick={() => setSummaryFormat('bullet')}
+              >
+                Bullet Points
+              </button>
+            </div>
+          </div>
+
           <button
             onClick={handleSubmit}
             disabled={loading || (!file && !transcript.trim())}
             className="submit-button"
           >
-            {loading ? '⏳ Processing...' : '✨ Generate Summary'}
+            {loading ? (
+              <span className="loading-text">
+                <span className="spinner"></span>
+                Processing...
+              </span>
+            ) : (
+              '✨ Generate Summary'
+            )}
           </button>
 
           {error && (
@@ -161,21 +247,35 @@ function App() {
 
         {summary && (
           <div className="summary-section">
-            <h2>📊 Call Summary</h2>
+            <div className="summary-header">
+              <h2>📊 Call Summary</h2>
+              <div className="summary-actions">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(summary);
+                    alert('✅ Summary copied to clipboard!');
+                  }}
+                  className="action-button"
+                >
+                  📋 Copy
+                </button>
+                <button
+                  onClick={exportToPDF}
+                  className="action-button pdf-button"
+                >
+                  📥 Export PDF
+                </button>
+              </div>
+            </div>
             <div className="summary-content">
               <pre>{summary}</pre>
             </div>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(summary);
-                alert('Summary copied to clipboard!');
-              }}
-              className="copy-button"
-            >
-              📋 Copy Summary
-            </button>
           </div>
         )}
+
+        <footer className="footer">
+          <p>Powered by AI • Secure & Private • Built for Call Centers</p>
+        </footer>
       </div>
     </div>
   );
