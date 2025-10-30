@@ -1,4 +1,4 @@
-* {
+  * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -6,7 +6,7 @@
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ff6b9d 0%, #ffa07a 100%);
   min-height: 100vh;
 }
 
@@ -24,7 +24,7 @@ body {
   padding: 3rem;
   max-width: 900px;
   width: 100%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(255, 107, 157, 0.3);
   animation: fadeIn 0.5s ease-in;
 }
 
@@ -40,15 +40,36 @@ body {
 }
 
 .header {
-  text-align: center;
   margin-bottom: 2rem;
 }
 
-h1 {
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.logo-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #ff6b9d 0%, #ffa07a 100%);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+  box-shadow: 0 8px 20px rgba(255, 107, 157, 0.3);
+  flex-shrink: 0;
+}
+
+.logo-text h1 {
   color: #333;
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+  background: linear-gradient(135deg, #ff6b9d 0%, #ffa07a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -56,7 +77,7 @@ h1 {
 
 .subtitle {
   color: #666;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .input-section {
@@ -78,21 +99,21 @@ h1 {
 .file-input {
   width: 100%;
   padding: 0.75rem;
-  border: 2px dashed #667eea;
+  border: 2px dashed #ff6b9d;
   border-radius: 10px;
-  background: #f8f9ff;
+  background: #fff5f8;
   cursor: pointer;
   transition: all 0.3s;
 }
 
 .file-input:hover {
-  border-color: #764ba2;
-  background: #f0f2ff;
+  border-color: #ffa07a;
+  background: #ffe8f0;
 }
 
 .file-name {
   margin-top: 0.5rem;
-  color: #667eea;
+  color: #ff6b9d;
   font-weight: 500;
   animation: slideIn 0.3s ease-in;
 }
@@ -145,13 +166,13 @@ h1 {
 
 .transcript-input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #ff6b9d;
 }
 
 .format-selector {
   margin: 1.5rem 0;
   padding: 1rem;
-  background: #f8f9ff;
+  background: #fff5f8;
   border-radius: 10px;
 }
 
@@ -179,12 +200,12 @@ h1 {
 }
 
 .format-btn:hover {
-  border-color: #667eea;
+  border-color: #ff6b9d;
   transform: translateY(-2px);
 }
 
 .format-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ff6b9d 0%, #ffa07a 100%);
   color: white;
   border-color: transparent;
 }
@@ -192,7 +213,7 @@ h1 {
 .submit-button {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ff6b9d 0%, #ffa07a 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -204,7 +225,7 @@ h1 {
 
 .submit-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 10px 25px rgba(255, 107, 157, 0.4);
 }
 
 .submit-button:disabled {
@@ -277,7 +298,7 @@ h1 {
 
 .action-button {
   padding: 0.75rem 1.5rem;
-  background: #667eea;
+  background: #ff6b9d;
   color: white;
   border: none;
   border-radius: 8px;
@@ -287,7 +308,7 @@ h1 {
 }
 
 .action-button:hover {
-  background: #764ba2;
+  background: #ffa07a;
   transform: translateY(-2px);
 }
 
@@ -300,7 +321,7 @@ h1 {
 }
 
 .summary-content {
-  background: #f8f9ff;
+  background: #fff5f8;
   border-radius: 10px;
   padding: 1.5rem;
   margin-bottom: 1rem;
@@ -329,8 +350,19 @@ h1 {
     padding: 2rem 1.5rem;
   }
 
-  h1 {
-    font-size: 2rem;
+  .logo {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .logo-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+
+  .logo-text h1 {
+    font-size: 1.5rem;
   }
 
   .format-options {

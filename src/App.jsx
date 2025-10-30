@@ -1,3 +1,4 @@
+// Updated with new features
 import { useState } from 'react';
 import jsPDF from 'jspdf';
 import './App.css';
@@ -142,7 +143,7 @@ ${text}`;
     // Add header
     doc.setFontSize(18);
     doc.setFont(undefined, 'bold');
-    doc.text('Call Center Summary', margin, 20);
+    doc.text('AW Call Centre Summary', margin, 20);
     
     // Add date
     doc.setFontSize(10);
@@ -155,15 +156,20 @@ ${text}`;
     doc.text(lines, margin, 40);
     
     // Save the PDF
-    doc.save(`call-summary-${Date.now()}.pdf`);
+    doc.save(`aw-call-summary-${Date.now()}.pdf`);
   };
 
   return (
     <div className="app">
       <div className="container">
         <div className="header">
-          <h1>📞 Call Center Summary Tool</h1>
-          <p className="subtitle">AI-powered call analysis and summarization</p>
+          <div className="logo">
+            <div className="logo-icon">AW</div>
+            <div className="logo-text">
+              <h1>AW Call Centre Summary Tool</h1>
+              <p className="subtitle">AI-powered call analysis and summarization</p>
+            </div>
+          </div>
         </div>
 
         <div className="input-section">
@@ -274,7 +280,7 @@ ${text}`;
         )}
 
         <footer className="footer">
-          <p>Powered by AI • Secure & Private • Built for Call Centers</p>
+          <p>Powered by AI • Secure & Private • Built for Call Centres</p>
         </footer>
       </div>
     </div>
