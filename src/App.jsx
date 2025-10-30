@@ -1,7 +1,8 @@
-// Updated with new features
+// Updated with multi-language support
 import { useState } from 'react';
 import jsPDF from 'jspdf';
 import './App.css';
+import { translations } from './translations';
 
 // Use environment variable for API URL, fallback to localhost for development
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -12,7 +13,11 @@ function App() {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [summaryFormat, setSummaryFormat] = useState('detailed'); // brief, detailed, bullet
+  const [summaryFormat, setSummaryFormat] = useState('detailed');
+  const [language, setLanguage] = useState('en'); // Default to English
+
+  // Get current translations
+  const t = translations[language];
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -29,7 +34,6 @@ function App() {
 
   const transcribeAudio = async (audioFile) => {
     try {
-      // Convert file to base64
       const reader = new FileReader();
       const base64Audio = await new Promise((resolve, reject) => {
         reader.onload = () => resolve(reader.result.split(',')[1]);
@@ -37,7 +41,6 @@ function App() {
         reader.readAsDataURL(audioFile);
       });
 
-      // Call backend API
       const response = await fetch(`${API_URL}/api/transcribe`, {
         method: 'POST',
         headers: {
@@ -85,7 +88,6 @@ Call transcript:
 ${text}`;
       }
 
-      // Call backend API
       const response = await fetch(`${API_URL}/api/summarize`, {
         method: 'POST',
         headers: {
@@ -113,18 +115,15 @@ ${text}`;
     try {
       let textToSummarize = transcript;
 
-      // If file is uploaded, transcribe it first
       if (file) {
         textToSummarize = await transcribeAudio(file);
-        setTranscript(textToSummarize); // Show the transcript
+        setTranscript(textToSummarize);
       }
 
-      // Check if we have text to summarize
       if (!textToSummarize.trim()) {
-        throw new Error('Please provide either an audio file or paste a transcript');
+        throw new Error(t.error);
       }
 
-      // Generate summary
       const summaryResult = await generateSummary(textToSummarize);
       setSummary(summaryResult);
     } catch (err) {
@@ -140,22 +139,18 @@ ${text}`;
     const margin = 20;
     const maxWidth = pageWidth - (margin * 2);
     
-    // Add header
     doc.setFontSize(18);
     doc.setFont(undefined, 'bold');
     doc.text('AW Call Centre Summary', margin, 20);
     
-    // Add date
     doc.setFontSize(10);
     doc.setFont(undefined, 'normal');
     doc.text(`Generated: ${new Date().toLocaleString()}`, margin, 30);
     
-    // Add summary content
     doc.setFontSize(11);
     const lines = doc.splitTextToSize(summary, maxWidth);
     doc.text(lines, margin, 40);
     
-    // Save the PDF
     doc.save(`aw-call-summary-${Date.now()}.pdf`);
   };
 
@@ -166,16 +161,29 @@ ${text}`;
           <div className="logo">
             <div className="logo-icon">AW</div>
             <div className="logo-text">
-              <h1>AW Call Centre Summary Tool</h1>
-              <p className="subtitle">AI-powered call analysis and summarization</p>
+              <h1>{t.title}</h1>
+              <p className="subtitle">{t.subtitle}</p>
             </div>
+          </div>
+          
+          <div className="language-selector">
+            <select 
+              value={language} 
+              onChange={(e) => setLanguage(e.target.value)}
+              className="language-dropdown"
+            >
+              <option value="en">🇬🇧 English</option>
+              <option value="af">🇿🇦 Afrikaans</option>
+              <option value="zu">🇿🇦 isiZulu</option>
+              <option value="xh">🇿🇦 isiXhosa</option>
+            </select>
           </div>
         </div>
 
         <div className="input-section">
           <div className="upload-box">
             <label htmlFor="audio-upload" className="upload-label">
-              🎤 Upload Audio Recording
+              🎤 {t.uploadLabel}
             </label>
             <input
               id="audio-upload"
@@ -184,47 +192,47 @@ ${text}`;
               onChange={handleFileChange}
               className="file-input"
             />
-            {file && <p className="file-name">✅ Selected: {file.name}</p>}
+            {file && <p className="file-name">✅ {t.selectedFile} {file.name}</p>}
           </div>
 
           <div className="divider">
-            <span>OR</span>
+            <span>{t.or}</span>
           </div>
 
           <div className="transcript-box">
             <label htmlFor="transcript" className="transcript-label">
-              📝 Paste Call Transcript
+              📝 {t.pasteLabel}
             </label>
             <textarea
               id="transcript"
               value={transcript}
               onChange={handleTranscriptChange}
-              placeholder="Paste the call transcript here..."
+              placeholder={t.placeholder}
               rows="8"
               className="transcript-input"
             />
           </div>
 
           <div className="format-selector">
-            <label className="format-label">📊 Summary Format:</label>
+            <label className="format-label">📊 {t.formatLabel}</label>
             <div className="format-options">
               <button
                 className={`format-btn ${summaryFormat === 'brief' ? 'active' : ''}`}
                 onClick={() => setSummaryFormat('brief')}
               >
-                Brief
+                {t.brief}
               </button>
               <button
                 className={`format-btn ${summaryFormat === 'detailed' ? 'active' : ''}`}
                 onClick={() => setSummaryFormat('detailed')}
               >
-                Detailed
+                {t.detailed}
               </button>
               <button
                 className={`format-btn ${summaryFormat === 'bullet' ? 'active' : ''}`}
                 onClick={() => setSummaryFormat('bullet')}
               >
-                Bullet Points
+                {t.bulletPoints}
               </button>
             </div>
           </div>
@@ -237,10 +245,10 @@ ${text}`;
             {loading ? (
               <span className="loading-text">
                 <span className="spinner"></span>
-                Processing...
+                {t.processing}
               </span>
             ) : (
-              '✨ Generate Summary'
+              `✨ ${t.generateButton}`
             )}
           </button>
 
@@ -254,22 +262,22 @@ ${text}`;
         {summary && (
           <div className="summary-section">
             <div className="summary-header">
-              <h2>📊 Call Summary</h2>
+              <h2>📊 {t.summaryTitle}</h2>
               <div className="summary-actions">
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(summary);
-                    alert('✅ Summary copied to clipboard!');
+                    alert(`✅ ${t.copiedAlert}`);
                   }}
                   className="action-button"
                 >
-                  📋 Copy
+                  📋 {t.copyButton}
                 </button>
                 <button
                   onClick={exportToPDF}
                   className="action-button pdf-button"
                 >
-                  📥 Export PDF
+                  📥 {t.exportButton}
                 </button>
               </div>
             </div>
@@ -280,7 +288,7 @@ ${text}`;
         )}
 
         <footer className="footer">
-          <p>Powered by AI • Secure & Private • Built for Call Centres</p>
+          <p>{t.footer}</p>
         </footer>
       </div>
     </div>
