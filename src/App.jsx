@@ -1,23 +1,48 @@
-// Updated with multi-language support
-import { useState } from 'react';
+// Updated with authentication
+import { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import './App.css';
 import { translations } from './translations';
+import { supabase } from './supabaseClient';
+import Auth from './Auth';
 
 // Use environment variable for API URL, fallback to localhost for development
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [file, setFile] = useState(null);
   const [transcript, setTranscript] = useState('');
   const [summary, setSummary] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
   const [summaryFormat, setSummaryFormat] = useState('detailed');
-  const [language, setLanguage] = useState('en'); // Default to English
+  const [language, setLanguage] = useState('en');
 
   // Get current translations
   const t = translations[language];
+
+  // Check if user is logged in
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -110,7 +135,7 @@ ${text}`;
   const handleSubmit = async () => {
     setError('');
     setSummary(null);
-    setLoading(true);
+    setProcessing(true);
 
     try {
       let textToSummarize = transcript;
@@ -129,7 +154,7 @@ ${text}`;
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      setProcessing(false);
     }
   };
 
@@ -146,14 +171,33 @@ ${text}`;
     doc.setFontSize(10);
     doc.setFont(undefined, 'normal');
     doc.text(`Generated: ${new Date().toLocaleString()}`, margin, 30);
+    doc.text(`User: ${user.email}`, margin, 36);
     
     doc.setFontSize(11);
     const lines = doc.splitTextToSize(summary, maxWidth);
-    doc.text(lines, margin, 40);
+    doc.text(lines, margin, 46);
     
     doc.save(`aw-call-summary-${Date.now()}.pdf`);
   };
 
+  // Show loading while checking auth
+  if (loading) {
+    return (
+      <div className="app">
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login if not authenticated
+  if (!user) {
+    return <Auth onLogin={setUser} />;
+  }
+
+  // Show main app if authenticated
   return (
     <div className="app">
       <div className="container">
@@ -166,17 +210,26 @@ ${text}`;
             </div>
           </div>
           
-          <div className="language-selector">
-            <select 
-              value={language} 
-              onChange={(e) => setLanguage(e.target.value)}
-              className="language-dropdown"
-            >
-              <option value="en">🇬🇧 English</option>
-              <option value="af">🇿🇦 Afrikaans</option>
-              <option value="zu">🇿🇦 isiZulu</option>
-              <option value="xh">🇿🇦 isiXhosa</option>
-            </select>
+          <div className="header-actions">
+            <div className="user-info">
+              <span className="user-email">👤 {user.email}</span>
+              <button onClick={handleSignOut} className="signout-button">
+                Sign Out
+              </button>
+            </div>
+            
+            <div className="language-selector">
+              <select 
+                value={language} 
+                onChange={(e) => setLanguage(e.target.value)}
+                className="language-dropdown"
+              >
+                <option value="en">🇬🇧 English</option>
+                <option value="af">🇿🇦 Afrikaans</option>
+                <option value="zu">🇿🇦 isiZulu</option>
+                <option value="xh">🇿🇦 isiXhosa</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -239,10 +292,10 @@ ${text}`;
 
           <button
             onClick={handleSubmit}
-            disabled={loading || (!file && !transcript.trim())}
+            disabled={processing || (!file && !transcript.trim())}
             className="submit-button"
           >
-            {loading ? (
+            {processing ? (
               <span className="loading-text">
                 <span className="spinner"></span>
                 {t.processing}
