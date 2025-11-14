@@ -6,10 +6,12 @@ export default function Auth({ onLogin }) {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -19,6 +21,15 @@ export default function Auth({ onLogin }) {
 
     try {
       if (isSignUp) {
+        // Validate passwords match
+        if (password !== confirmPassword) {
+          throw new Error('Passwords do not match');
+        }
+
+        if (password.length < 6) {
+          throw new Error('Password must be at least 6 characters');
+        }
+
         // Sign up
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -27,7 +38,18 @@ export default function Auth({ onLogin }) {
 
         if (error) throw error;
 
-        setMessage('Check your email for the confirmation link!');
+        // Auto sign in after signup (no email confirmation needed)
+        setMessage('Account created successfully! Signing you in...');
+        
+        // Sign in immediately
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (signInError) throw signInError;
+
+        onLogin(signInData.user);
       } else {
         // Sign in
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -39,31 +61,6 @@ export default function Auth({ onLogin }) {
 
         onLogin(data.user);
       }
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleForgotPassword = async () => {
-    if (!email) {
-      setError('Please enter your email address first');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-    setMessage('');
-
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin,
-      });
-
-      if (error) throw error;
-
-      setMessage('Password reset link sent to your email!');
     } catch (error) {
       setError(error.message);
     } finally {
@@ -114,6 +111,30 @@ export default function Auth({ onLogin }) {
             </div>
           </div>
 
+          {isSignUp && (
+            <div className="form-group">
+              <label>Confirm Password</label>
+              <div className="password-input-wrapper">
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="password-toggle"
+                  aria-label="Toggle password visibility"
+                >
+                  {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+                </button>
+              </div>
+            </div>
+          )}
+
           {error && <div className="error-message">❌ {error}</div>}
           {message && <div className="success-message">✅ {message}</div>}
 
@@ -127,17 +148,6 @@ export default function Auth({ onLogin }) {
               isSignUp ? 'Sign Up' : 'Sign In'
             )}
           </button>
-
-          {!isSignUp && (
-            <button
-              type="button"
-              onClick={handleForgotPassword}
-              className="forgot-password"
-              disabled={loading}
-            >
-              Forgot Password?
-            </button>
-          )}
         </form>
 
         <div className="auth-switch">
@@ -148,6 +158,7 @@ export default function Auth({ onLogin }) {
               setIsSignUp(!isSignUp);
               setError('');
               setMessage('');
+              setConfirmPassword('');
             }}
             className="switch-button"
           >

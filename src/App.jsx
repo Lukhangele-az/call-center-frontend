@@ -1,4 +1,4 @@
-// Updated with authentication
+// Simplified without Call History
 import { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import './App.css';
@@ -6,7 +6,6 @@ import { translations } from './translations';
 import { supabase } from './supabaseClient';
 import Auth from './Auth';
 
-// Use environment variable for API URL, fallback to localhost for development
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 function App() {
@@ -20,7 +19,6 @@ function App() {
   const [summaryFormat, setSummaryFormat] = useState('detailed');
   const [language, setLanguage] = useState('en');
 
-  // Get current translations
   const t = translations[language];
 
   // Check if user is logged in
@@ -180,7 +178,6 @@ ${text}`;
     doc.save(`aw-call-summary-${Date.now()}.pdf`);
   };
 
-  // Show loading while checking auth
   if (loading) {
     return (
       <div className="app">
@@ -192,12 +189,10 @@ ${text}`;
     );
   }
 
-  // Show login if not authenticated
   if (!user) {
     return <Auth onLogin={setUser} />;
   }
 
-  // Show main app if authenticated
   return (
     <div className="app">
       <div className="container">
